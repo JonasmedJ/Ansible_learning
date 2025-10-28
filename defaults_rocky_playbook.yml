@@ -1,0 +1,13 @@
+---
+- name: Update all DNF packages
+  hosts: "rocky_linux"
+  become: true
+  tasks:
+    - name: Import update DNF tasks
+      import_tasks: tasks/update_dnf_tasks.yml
+    - name: Import packages rocky tasks
+      import_tasks: tasks/packages_rocky_tasks.yml
+    - name: Import copy create users tasks
+      import_tasks: tasks/create_users_tasks.yml
+    - name: Import copy vimrc tasks
+      import_tasks: tasks/copy_vimrc_tasks.yml

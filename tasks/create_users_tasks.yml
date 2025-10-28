@@ -1,0 +1,11 @@
+---
+# Tasks for creating users - include/import this from a play that sets hosts and vars
+- name: Create users from variables
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | password_hash('sha512') }}"
+    shell: "{{ item.shell }}"
+    groups: "{{ item.groups | default(omit) }}"
+    append: true
+    state: present
+  loop: "{{ users }}"

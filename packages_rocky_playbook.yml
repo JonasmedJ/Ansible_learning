@@ -1,0 +1,15 @@
+---
+- name: Install packages on Rocky Linux
+  hosts: rocky_linux
+  become: true
+  tasks:
+    - name: Install EPEL repository
+      ansible.builtin.dnf:
+        name: epel-release
+        state: present
+
+    - name: Install required packages
+      ansible.builtin.dnf:
+        name:
+          - htop
+        state: present

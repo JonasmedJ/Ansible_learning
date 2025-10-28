@@ -9,5 +9,6 @@
         password: "{{ item.password | password_hash('sha512') }}"
         shell: "{{ item.shell }}"
         groups: "{{ item.groups | default(omit) }}"
+        append: true
         state: present
       loop: "{{ users }}"

@@ -1,0 +1,9 @@
+---
+# Task-only file: include this with include_tasks/import_tasks from a play
+
+- name: Update all packages
+  ansible.builtin.dnf:
+    name: '*'
+    state: latest
+    update_cache: true
+    update_only: true

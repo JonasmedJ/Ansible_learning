@@ -1,11 +1,6 @@
 ---
 server_name: rocky01
 ansible_host: 172.26.4.184
-
-users:
-  - name: dgm
-    password: Kode1234!!
-    shell: /bin/bash
-    groups: wheel
-
-
+network_config:
+  ip_address: "192.168.1.100/24"
+  gateway: "192.168.1.1"

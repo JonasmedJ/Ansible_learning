@@ -1,0 +1,8 @@
+---
+- name: Install packages via import_tasks
+  hosts: rocky_linux
+  become: true
+
+  tasks:
+    - name: Import packages rocky tasks
+      import_tasks: tasks/packages_rocky_tasks.yml

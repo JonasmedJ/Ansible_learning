@@ -1,0 +1,11 @@
+---
+- name: Configure network settings
+  hosts: all
+  tasks:
+    - name: Set static IP address
+      ansible.builtin.command: ip addr add {{ network_config.ip_address }} dev eth0
+      when: network_config is defined
+
+    - name: Set default gateway
+      ansible.builtin.command: ip route add default via {{ network_config.gateway }}
+      when: network_config is defined

@@ -1,0 +1,8 @@
+---
+- name: Update DNF via import_tasks
+  hosts: rocky_linux
+  become: true
+
+  tasks:
+    - name: Import update DNF tasks
+      import_tasks: tasks/update_dnf_tasks.yml

@@ -1,0 +1,9 @@
+---
+- name: Copy .vimrc to home directory
+  ansible.builtin.copy:
+    src: "files/vimrc/{{ item.name }}.vimrc"
+    dest: "/home/{{ item.name }}/.vimrc"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0644'
+  loop: "{{ users }}"
