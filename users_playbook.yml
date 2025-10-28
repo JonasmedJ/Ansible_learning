@@ -1,0 +1,13 @@
+---
+- name: Create users
+  hosts: web_servers
+  become: true
+  tasks:
+    - name: Create users from variables
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        password: "{{ item.password | password_hash('sha512') }}"
+        shell: "{{ item.shell }}"
+        groups: "{{ item.groups | default(omit) }}"
+        state: present
+      loop: "{{ users }}"

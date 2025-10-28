@@ -1,0 +1,11 @@
+---
+server_name: rocky01
+ansible_host: 172.26.4.184
+
+users:
+  - name: dgm
+    password: Kode1234!!
+    shell: /bin/bash
+    groups: wheel
+
+
