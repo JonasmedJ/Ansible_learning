@@ -1,0 +1,111 @@
+# Create a linked clone VM from a template in Proxmox VE
+# and assign it a cloud-init user and password
+# returns the VM ID and IP address username and password
+
+---
+- name: >
+    Create linked clone VM from template in Proxmox VE.
+    The VM source is Rocky10-Template.
+    The target VM name is Rocky-cloud-img-ansible-{vmid}
+  hosts: localhost
+#  vars_prompt:
+    # - name: newid_user
+    #   prompt: "ID for the new VM? (Leave blank for next available ID): "
+    #   private: false
+
+
+    # - name: vm_name
+    #   prompt: "Name for the new VM: "
+    #   private: false
+    #   default: "Rocky-cloud-img-ansible"
+  vars:
+    api_host: 10.101.8.107
+    api_token_id: ansible
+    api_token_secret: 3b663b7a-997e-422a-9f3e-b2e99f3c397c
+    api_user: root@pam
+    api_node: pve
+    newid: "{{ newid_user | default(omit) }}"
+    vm_name: "Rocky-cloud-img-ansible"
+    # vm_pass: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits']) }}"
+    vm_pass: "Kode1234!"
+    vm_user: "root"
+    vm_template: "Rocky10-Template"
+
+  tasks:
+    - name: Create linked clone VM from template
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token_id: "{{ api_token_id }}"
+        api_token_secret: "{{ api_token_secret }}"
+        node: "{{ api_node }}"
+        full: false
+        format: unspecified
+        timeout: 500
+        clone: "{{ vm_template }}"
+        name: "{{ vm_name }}"
+        newid: "{{ newid }}"
+      register: new_vm_id
+
+    - name: Set the newid variable if not provided
+      ansible.builtin.set_fact:
+        newid: "{{ new_vm_id.vmid }}"
+        vm_name: "{{ vm_name }}-{{ new_vm_id.vmid }}"
+
+
+    - name: Update VM configuration to add cloud init device
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token_id: "{{ api_token_id }}"
+        api_token_secret: "{{ api_token_secret }}"
+        node: "{{ api_node }}"
+        vmid: "{{ newid }}"
+        ide:
+          ide2: 'local-lvm:cloudinit,format=raw'
+        ciuser: "{{ vm_user }}"
+        cipassword: "{{ vm_pass }}"
+        name: "{{ vm_name }}"
+        update: true
+      register: result
+      until: result is succeeded
+      retries: 3
+      delay: 5
+
+
+    - name: Start the new VM
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token_id: "{{ api_token_id }}"
+        api_token_secret: "{{ api_token_secret }}"
+        node: "{{ api_node }}"
+        vmid: "{{ newid }}"
+        state: started
+
+    - name: Retrieve information about specific VM by ID
+      community.proxmox.proxmox_vm_info:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token_id: "{{ api_token_id }}"
+        api_token_secret: "{{ api_token_secret }}"
+        node: "{{ api_node }}"
+        vmid: "{{ newid }}"
+        network: true
+        type: qemu
+      register: vm_info
+      until: vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] is defined
+      retries: 3
+      delay: 10
+
+    - name: Set IP address variable
+      ansible.builtin.set_fact:
+        vm_ip_address: "{{ vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] }}"
+
+    - name: Display the VM information
+      ansible.builtin.debug:
+        msg:
+          - "VM ID: {{ newid }}"
+          - "IP address: {{ vm_ip_address }}"
+          - "Username: {{ vm_user }}"
+          - "Password: {{ vm_pass }}"
