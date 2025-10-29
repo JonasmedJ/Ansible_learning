@@ -7,6 +7,7 @@
     Create linked clone VM from template in Proxmox VE.
     The VM source is Rocky10-Template.
     The target VM name is Rocky-cloud-img-ansible-{vmid}
+# Can run on local host because it uses the proxmox api
   hosts: localhost
 #  vars_prompt:
     # - name: newid_user
@@ -19,12 +20,15 @@
     #   private: false
     #   default: "Rocky-cloud-img-ansible"
   vars:
+    # The server with Proxmox VE API
     api_host: 10.101.8.107
+    # The API token credentials
     api_token_id: ansible
     api_token_secret: 3b663b7a-997e-422a-9f3e-b2e99f3c397c
     api_user: root@pam
+    # The Proxmox node where the VM will be created
     api_node: pve
-    newid: "{{ newid_user | default(omit) }}"
+    # VM parameters -- name will be appended with id
     vm_name: "Rocky-cloud-img-ansible"
     # vm_pass: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits']) }}"
     vm_pass: "Kode1234!"
@@ -39,6 +43,7 @@
         api_token_id: "{{ api_token_id }}"
         api_token_secret: "{{ api_token_secret }}"
         node: "{{ api_node }}"
+        # when full is false and format is unspecified, a linked clone is created
         full: false
         format: unspecified
         timeout: 500
@@ -47,7 +52,8 @@
         newid: "{{ newid }}"
       register: new_vm_id
 
-    - name: Set the newid variable if not provided
+
+    - name: Set the newid and vm_name facts
       ansible.builtin.set_fact:
         newid: "{{ new_vm_id.vmid }}"
         vm_name: "{{ vm_name }}-{{ new_vm_id.vmid }}"
@@ -61,10 +67,13 @@
         api_token_secret: "{{ api_token_secret }}"
         node: "{{ api_node }}"
         vmid: "{{ newid }}"
+        # add cloud init device
         ide:
           ide2: 'local-lvm:cloudinit,format=raw'
+        # cloud-init settings
         ciuser: "{{ vm_user }}"
         cipassword: "{{ vm_pass }}"
+        # rename the vm to include the vmid
         name: "{{ vm_name }}"
         update: true
       register: result
@@ -98,7 +107,7 @@
       retries: 3
       delay: 10
 
-    - name: Set IP address variable
+    - name: Set IP address fact
       ansible.builtin.set_fact:
         vm_ip_address: "{{ vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] }}"
 
