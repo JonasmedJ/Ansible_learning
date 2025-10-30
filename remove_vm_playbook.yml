@@ -1,0 +1,55 @@
+---
+- name: Remove VM from Proxmox
+  hosts: localhost
+  vars_prompt:
+    - name: vmid
+      prompt: "ID of the VM to remove: "
+      private: false
+
+  vars:
+    proxmox_var_file: "inventory/host_vars/proxmox01.yml"
+    proxmox_vault_file: "inventory/host_vars/proxmox01.vault"
+
+  tasks:
+    - name: Include vars of proxmox
+      ansible.builtin.include_vars:
+        file: "{{ proxmox_var_file }}"
+        name: proxmox
+
+    - name: Include vault vars of proxmox
+      ansible.builtin.include_vars:
+        file: "{{ proxmox_vault_file }}"
+
+    - name: Get vm name from proxmox
+      community.proxmox.proxmox_vm_info:
+        node: "{{ proxmox.node }}"
+        vmid: "{{ vmid }}"
+      environment: "{{ proxmox.env }}"
+      register: vm_info
+
+    - name: Set vm name as fact
+      ansible.builtin.set_fact:
+        vm_name: "{{ vm_info.proxmox_vms[0].name }}"
+
+
+    - name: Include vars of vm
+      ansible.builtin.include_vars:
+        file: "inventory/host_vars/{{ vm_name }}.yml"
+
+    - name: Confirm that the VM will be removed
+      ansible.builtin.pause:
+        prompt: "Are you sure you want to remove {{ vm_name }} with ID {{ vmid }}? Press Enter to continue or Ctrl+C to abort."
+
+    - name: Stop the new VM
+      community.proxmox.proxmox_kvm:
+        node: "{{ proxmox.node }}"
+        vmid: "{{ vmid }}"
+        state: stopped
+      environment: "{{ proxmox.env }}"
+
+    - name: Remove VM from Proxmox
+      community.proxmox.proxmox_kvm:
+        node: "{{ proxmox.node }}"
+        vmid: "{{ vmid }}"
+        state: absent
+      environment: "{{ proxmox.env }}"
