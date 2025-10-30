@@ -1,0 +1,12 @@
+---
+server_name: proxmox01
+ansible_host: 10.101.8.107
+node: pve
+
+
+env:
+  PROXMOX_USER: "{{ vault_api_user }}"
+  PROXMOX_TOKEN_ID: "{{ vault_api_token_id }}"
+  PROXMOX_TOKEN_SECRET: "{{ vault_api_token_secret }}"
+  PROXMOX_HOST: "{{ vault_api_host }}"
+

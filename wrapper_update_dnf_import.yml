@@ -5,4 +5,4 @@
 
   tasks:
     - name: Import update DNF tasks
-      import_tasks: tasks/update_dnf_tasks.yml
+      ansible.builtin.import_tasks: tasks/update_dnf_tasks.yml

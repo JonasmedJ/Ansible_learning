@@ -1,6 +1,6 @@
 .logs/*
 *.retry
-*.vault
+# *.vault
 collections/*
 !collections/ansible_collections
 !collections/requirements.yml

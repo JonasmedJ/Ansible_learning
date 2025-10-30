@@ -4,4 +4,4 @@
   become: true
   tasks:
     - name: Import user creation tasks
-      import_tasks: tasks/create_users_tasks.yml
+      ansible.builtin.import_tasks: tasks/create_users_tasks.yml

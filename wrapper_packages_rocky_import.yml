@@ -5,4 +5,4 @@
 
   tasks:
     - name: Import packages rocky tasks
-      import_tasks: tasks/packages_rocky_tasks.yml
+      ansible.builtin.import_tasks: tasks/packages_rocky_tasks.yml

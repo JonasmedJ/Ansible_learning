@@ -14,43 +14,44 @@
     #   prompt: "ID for the new VM? (Leave blank for next available ID): "
     #   private: false
 
-
     # - name: vm_name
     #   prompt: "Name for the new VM: "
     #   private: false
     #   default: "Rocky-cloud-img-ansible"
+
   vars:
-    # The server with Proxmox VE API
-    api_host: 10.101.8.107
-    # The API token credentials
-    api_token_id: ansible
-    api_token_secret: 3b663b7a-997e-422a-9f3e-b2e99f3c397c
-    api_user: root@pam
-    # The Proxmox node where the VM will be created
-    api_node: pve
+    proxmox_var_file: "inventory/host_vars/proxmox01.yml"
+    proxmox_vault_file: "inventory/host_vars/proxmox01.vault"
+
     # VM parameters -- name will be appended with id
     vm_name: "Rocky-cloud-img-ansible"
-    # vm_pass: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits']) }}"
     vm_pass: "Kode1234!"
     vm_user: "root"
     vm_template: "Rocky10-Template"
 
   tasks:
+    - name: Include vars of proxmox
+      ansible.builtin.include_vars:
+        file: "{{ proxmox_var_file }}"
+        name: proxmox
+
+    - name: Include vault vars of proxmox
+      ansible.builtin.include_vars:
+        file: "{{ proxmox_vault_file }}"
+
     - name: Create linked clone VM from template
       community.proxmox.proxmox_kvm:
-        api_host: "{{ api_host }}"
-        api_user: "{{ api_user }}"
-        api_token_id: "{{ api_token_id }}"
-        api_token_secret: "{{ api_token_secret }}"
-        node: "{{ api_node }}"
+        node: "{{ proxmox.node }}"
         # when full is false and format is unspecified, a linked clone is created
         full: false
         format: unspecified
         timeout: 500
         clone: "{{ vm_template }}"
         name: "{{ vm_name }}"
-        newid: "{{ newid }}"
+        # newid: "{{ newid }}"
       register: new_vm_id
+      environment: "{{ proxmox.env }}"
+      # ignore_errors: {{ ansible_check_mode }}
 
 
     - name: Set the newid and vm_name facts
@@ -61,11 +62,7 @@
 
     - name: Update VM configuration to add cloud init device
       community.proxmox.proxmox_kvm:
-        api_host: "{{ api_host }}"
-        api_user: "{{ api_user }}"
-        api_token_id: "{{ api_token_id }}"
-        api_token_secret: "{{ api_token_secret }}"
-        node: "{{ api_node }}"
+        node: "{{ proxmox.node }}"
         vmid: "{{ newid }}"
         # add cloud init device
         ide:
@@ -77,6 +74,7 @@
         name: "{{ vm_name }}"
         update: true
       register: result
+      environment: "{{ proxmox.env }}"
       until: result is succeeded
       retries: 3
       delay: 5
@@ -84,28 +82,22 @@
 
     - name: Start the new VM
       community.proxmox.proxmox_kvm:
-        api_host: "{{ api_host }}"
-        api_user: "{{ api_user }}"
-        api_token_id: "{{ api_token_id }}"
-        api_token_secret: "{{ api_token_secret }}"
-        node: "{{ api_node }}"
+        node: "{{ proxmox.node }}"
         vmid: "{{ newid }}"
         state: started
+      environment: "{{ proxmox.env }}"
 
     - name: Retrieve information about specific VM by ID
       community.proxmox.proxmox_vm_info:
-        api_host: "{{ api_host }}"
-        api_user: "{{ api_user }}"
-        api_token_id: "{{ api_token_id }}"
-        api_token_secret: "{{ api_token_secret }}"
-        node: "{{ api_node }}"
+        node: "{{ proxmox.node }}"
         vmid: "{{ newid }}"
         network: true
         type: qemu
       register: vm_info
       until: vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] is defined
-      retries: 3
-      delay: 10
+      retries: 5
+      delay: 5
+      environment: "{{ proxmox.env }}"
 
     - name: Set IP address fact
       ansible.builtin.set_fact:
