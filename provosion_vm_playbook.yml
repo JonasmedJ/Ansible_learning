@@ -120,13 +120,15 @@
 
     - name: Insert new host into inventory file
       ansible.builtin.blockinfile:
-        path: "/workspaces/Ansible_learning/inventory/cloud-hosts.yml"
-        block: |
-          "        {{ vm_name }}:"
+        path: "/workspaces/Ansible_learning/inventory/hosts.yml"
+        block: "        {{ vm_name }}:"
         state: present
+        marker_begin: "# {{ vm_name }} host marker begin"
+        marker_end: "# {{ vm_name }} host marker end"
         insertafter: |
           "  rocky-cloud:"
           "    hosts:"
+
 
     - name: Display the VM information
       ansible.builtin.debug:

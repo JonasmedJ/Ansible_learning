@@ -1,6 +1,6 @@
 ---
 - name: Update all DNF packages
-  hosts: "rocky_linux"
+  hosts: "all"
   become: true
   tasks:
     - name: Import update DNF tasks

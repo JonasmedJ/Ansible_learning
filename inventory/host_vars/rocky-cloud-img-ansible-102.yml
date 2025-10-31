@@ -1,7 +1,0 @@
-ansible_host: 10.101.222.167
-ansible_user: root
-ansible_password: Kode1234!
-ansible_become_pass: Kode1234!
-server_name: rocky-cloud-img-ansible-102
-proxmox_vm_id: 102
-proxmox_vm_name: rocky-cloud-img-ansible-102
