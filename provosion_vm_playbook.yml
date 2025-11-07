@@ -24,7 +24,7 @@
     proxmox_vault_file: "inventory/host_vars/proxmox01.vault"
 
     # VM parameters -- name will be appended with id
-    vm_name: "rocky-cloud-img-ansible"
+    vm_name: "rocky"
     vm_pass: "Kode1234!"
     vm_user: "root"
     vm_template: "Rocky10-Template"
@@ -82,58 +82,58 @@
       delay: 5
 
 
-    - name: Start the new VM
-      community.proxmox.proxmox_kvm:
-        node: "{{ proxmox.node }}"
-        vmid: "{{ newid }}"
-        state: started
-      environment: "{{ proxmox.env }}"
+    # - name: Start the new VM
+    #   community.proxmox.proxmox_kvm:
+    #     node: "{{ proxmox.node }}"
+    #     vmid: "{{ newid }}"
+    #     state: started
+    #   environment: "{{ proxmox.env }}"
 
-    - name: Retrieve IP address of the new VM
-      community.proxmox.proxmox_vm_info:
-        node: "{{ proxmox.node }}"
-        vmid: "{{ newid }}"
-        network: true
-        type: qemu
-      register: vm_info
-      until: vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] is defined
-      retries: 5
-      delay: 5
-      environment: "{{ proxmox.env }}"
+    # - name: Retrieve IP address of the new VM
+    #   community.proxmox.proxmox_vm_info:
+    #     node: "{{ proxmox.node }}"
+    #     vmid: "{{ newid }}"
+    #     network: true
+    #     type: qemu
+    #   register: vm_info
+    #   until: vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] is defined
+    #   retries: 5
+    #   delay: 5
+    #   environment: "{{ proxmox.env }}"
 
-    - name: Set IP address fact
-      ansible.builtin.set_fact:
-        vm_ip_address: "{{ vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] }}"
+    # - name: Set IP address fact
+    #   ansible.builtin.set_fact:
+    #     vm_ip_address: "{{ vm_info.proxmox_vms[0].network[1]['ip-addresses'][0]['ip-address'] }}"
 
-    - name: Save VM details to a file
-      ansible.builtin.copy:
-        dest: "/workspaces/Ansible_learning/inventory/host_vars/{{ vm_name }}.yml"
-        content: |
-          ansible_host: {{ vm_ip_address }}
-          ansible_user: {{ vm_user }}
-          ansible_password: {{ vm_pass }}
-          ansible_become_pass: {{ vm_pass }}
-          server_name: {{ vm_name }}
-          proxmox_vm_id: {{ newid }}
-          proxmox_vm_name: {{ vm_name }}
-        mode: "640"
+    # - name: Save VM details to a file
+    #   ansible.builtin.copy:
+    #     dest: "/workspaces/Ansible_learning/inventory/host_vars/{{ vm_name }}.yml"
+    #     content: |
+    #       ansible_host: {{ vm_ip_address }}
+    #       ansible_user: {{ vm_user }}
+    #       ansible_password: {{ vm_pass }}
+    #       ansible_become_pass: {{ vm_pass }}
+    #       server_name: {{ vm_name }}
+    #       proxmox_vm_id: {{ newid }}
+    #       proxmox_vm_name: {{ vm_name }}
+    #     mode: "640"
 
-    - name: Insert new host into inventory file
-      ansible.builtin.blockinfile:
-        path: "/workspaces/Ansible_learning/inventory/hosts.yml"
-        block: "        {{ vm_name }}:"
-        state: present
-        marker_begin: "# {{ vm_name }} host marker begin"
-        marker_end: "# {{ vm_name }} host marker end"
-        insertafter: |
-          "  rocky-cloud:"
-          "    hosts:"
+    # - name: Insert new host into inventory file
+    #   ansible.builtin.blockinfile:
+    #     path: "/workspaces/Ansible_learning/inventory/hosts.yml"
+    #     block: "        {{ vm_name }}:"
+    #     state: present
+    #     marker_begin: "# {{ vm_name }} host marker begin"
+    #     marker_end: "# {{ vm_name }} host marker end"
+    #     insertafter: |
+    #       "  rocky-cloud:"
+    #       "    hosts:"
 
 
-    - name: Display the VM information
-      ansible.builtin.debug:
-        msg:
-          - "VM ID: {{ newid }}"
-          - "IP address: {{ vm_ip_address }}"
-          - "Username: {{ vm_user }}"
-          - "Password: {{ vm_pass }}"
+    # - name: Display the VM information
+    #   ansible.builtin.debug:
+    #     msg:
+    #       - "VM ID: {{ newid }}"
+    #       - "IP address: {{ vm_ip_address }}"
+    #       - "Username: {{ vm_user }}"
+    #       - "Password: {{ vm_pass }}"

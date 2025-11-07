@@ -1,0 +1,27 @@
+---
+- name: Create and configure a new Rocky Linux VM
+  hosts: localhost
+  vars_prompt:
+    - name: os
+      prompt: "Enter the operating system for the new VM"
+      default: "rocky"
+      private: false
+    - name: vm_cpu
+      prompt: "Enter the number of CPUs for the VM"
+      private: false
+      default: "2"
+    - name: vm_memory
+      prompt: "Enter the amount of memory (in MB) for the VM"
+      private: false
+      default: "2048"
+    - name: vm_disk_size
+      prompt: "Enter the disk size (in GB) for the VM"
+      private: false
+      default: "20"
+
+  tasks:
+    - name: Create a new Rocky Linux VM
+      include_role:
+        name: proxmox_create_vm
+      vars:
+        proxmox_create_vm.os: "{{ os }}"
