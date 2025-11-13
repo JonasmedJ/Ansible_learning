@@ -1,0 +1,12 @@
+---
+- name: Ensure AD user exists
+  hosts: dgm-client
+
+
+  tasks:
+    - name: Debug AD user creation
+      ansible.builtin.debug:
+        msg: "Creating AD user {{ ad_user_username }}"
+
+  roles:
+    - AD-User

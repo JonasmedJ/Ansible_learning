@@ -1,0 +1,8 @@
+---
+server_name: dgm-client
+ansible_host: 10.101.236.124
+ansible_user: dgm@sko.butik
+ansible_password: Kode1234!
+ansible_connection: winrm
+ansible_winrm_transport: kerberos
+

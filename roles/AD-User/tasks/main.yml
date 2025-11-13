@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT-0
+---
+
+- name: Ensure AD user exists
+  microsoft.ad.user:
+    identity: "{{ ad_user_username }}"
+    password: "{{ ad_user_password }}"
+    path: "OU=HQ,DC=sko,DC=butik"
+    groups: "{{ ad_user_groups | default(omit) }}"
+    state: present
+  register: ad_user_result
+- name: Debug AD user creation result
+  ansible.builtin.debug:
+    msg: "{{ ad_user_result }}"
